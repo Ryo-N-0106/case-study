@@ -2,9 +2,119 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Game Quiz Mini</title>
+
 </head>
 <body>
+<h1>Game Quiz Mini</h1>
+
+<table id="tableQuiz">
+    <tr>
+        <th colspan="2">
+            <p id="question"></p>
+        </th>
+    </tr>
+    <tr>
+        <td>
+            <input type="button" id="answer1" value="Answer 1" onclick="checkAnswer(0,this)" style="width: 150px">
+        </td>
+        <td>
+            <input type="button" id="answer2" value="Answer 2" onclick="checkAnswer(1,this)" style="width: 150px">
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <input type="button" id="answer3" value="Answer 3" onclick="checkAnswer(2,this)" style="width: 150px">
+        </td>
+        <td>
+            <input type="button" id="answer4" value="Answer 4" onclick="checkAnswer(3,this)" style="width: 150px">
+        </td>
+    </tr>
+    <tr>
+        <th colspan="2">
+            <p id="result"></p>
+        </th>
+    </tr>
+</table>
+<br><br>
+<button type="button" id="nextAnswer" onclick="nextQuestion()">Next</button>
 
 </body>
+<script>
+    class quizGame{
+        constructor(question,options,correctAnswer){
+            this.question = question;
+            this.options = options;
+            this.correctAnswer = correctAnswer;
+        }
+    }
+
+    let question1 = new quizGame("Chào buổi sáng",["こんにちは","おはよう","こんばんは","すみません"],1);
+    let question2 = new quizGame("Xin cảm ơn",["ありがとう","さようなら","こんにちは","おやすみ"],0);
+    let question3 = new quizGame("Bạn tên là gì?",["おいくつですか。","おなまえは","おげんきですか。","いしゃですか。"],1);
+    let question4 = new quizGame("Câu nói khi kết thúc công việc là gì?",["ごちそうさまでした","しつれいします","おかえり","おつかれさま"],3);
+    let question5 = new quizGame("Trước khi ăn sẽ nói câu gì?",["ごちそうさまでした","ただいま","いただきます","おかねはらいます"],2)
+
+    let quizzes = [question1,question2,question3,question4,question5];
+
+    let currentQuestion = 0;
+
+    function renderQuestion(){
+        let currentText = quizzes[currentQuestion].question;
+        let currentOptions = quizzes[currentQuestion].options;
+
+        document.getElementById("question").innerHTML = currentText;
+        document.getElementById("answer1").value = currentOptions[0];
+        document.getElementById("answer2").value = currentOptions[1];
+        document.getElementById("answer3").value = currentOptions[2];
+        document.getElementById("answer4").value = currentOptions[3];
+    }
+
+    function nextQuestion(){
+        if (currentQuestion < quizzes.length - 1) {
+            currentQuestion++;
+            renderQuestion();
+            resetColor();
+        } else {
+            // Thể hiện tổng điểm số
+        }
+    }
+
+    function shuffle(quizzes) {
+        var ctr = quizzes.length,temp,index;
+        while (ctr > 0) {
+            index = Math.floor(Math.random() * ctr);
+            ctr--;
+            temp = quizzes[ctr];
+            quizzes[ctr] = quizzes[index];
+            quizzes[index] = temp;
+        }
+        return quizzes;
+    }
+
+    function checkAnswer(clickedIndex,myButton){
+        let correctAnswer = quizzes[currentQuestion].correctAnswer;
+
+        if (clickedIndex == correctAnswer){
+            myButton.style.backgroundColor = "green";
+            document.getElementById("result").innerHTML = "Câu trả lời chính xác!";// + "<br>" + "Điểm : " + score;
+        } else {
+            myButton.style.backgroundColor = "red";
+            document.getElementById("result").innerHTML = "Câu trả lời sai! Hãy chọn lại câu trả lời đúng."
+        }
+    }
+
+    function resetColor(){
+        document.getElementById("answer1").style.backgroundColor = "Lightgrey";
+        document.getElementById("answer2").style.backgroundColor = "Lightgrey";
+        document.getElementById("answer3").style.backgroundColor = "Lightgrey";
+        document.getElementById("answer4").style.backgroundColor = "Lightgrey";
+    }
+
+
+    shuffle(quizzes);
+    renderQuestion();
+
+
+</script>
 </html>
