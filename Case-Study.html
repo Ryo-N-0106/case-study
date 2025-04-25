@@ -4,9 +4,34 @@
     <meta charset="UTF-8">
     <title>Game Quiz Mini</title>
 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #tableQuiz {
+            margin: 0 auto;
+        }
+        #timer {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+            margin: 10px 0;
+        }
+        input[type="button"] {
+            background-color: Lightgrey;
+            padding: 10px;
+            cursor: pointer;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
 <h1>Game Quiz Mini</h1>
+<div id="timer">00:15</div>
 
 <table id="tableQuiz">
     <tr>
@@ -42,22 +67,51 @@
 </body>
 <script>
     class quizGame{
-        constructor(question,options,correctAnswer){
+        constructor(question,options,correctAnswer,stringAnswer){
             this.question = question;
             this.options = options;
             this.correctAnswer = correctAnswer;
+            this.stringAnswer = stringAnswer;
         }
     }
 
-    let question1 = new quizGame("Chào buổi sáng",["こんにちは","おはよう","こんばんは","すみません"],1);
-    let question2 = new quizGame("Xin cảm ơn",["ありがとう","さようなら","こんにちは","おやすみ"],0);
-    let question3 = new quizGame("Bạn tên là gì?",["おいくつですか。","おなまえは","おげんきですか。","いしゃですか。"],1);
-    let question4 = new quizGame("Câu nói khi kết thúc công việc là gì?",["ごちそうさまでした","しつれいします","おかえり","おつかれさま"],3);
-    let question5 = new quizGame("Trước khi ăn sẽ nói câu gì?",["ごちそうさまでした","ただいま","いただきます","おかねはらいます"],2)
+    let question1 = new quizGame("Chào buổi sáng",["1. こんにちは","2. おはよう","3. こんばんは","4. すみません"],1,"おはよう");
+    let question2 = new quizGame("Xin cảm ơn",["1. ありがとう","2. さようなら","3. こんにちは","4. おやすみ"],0,"ありがとう");
+    let question3 = new quizGame("Bạn tên là gì?",["1. おいくつですか。","2. おなまえは","3. おげんきですか。","4. いしゃですか。"],1,"おなまえは");
+    let question4 = new quizGame("Câu nói khi kết thúc công việc là gì?",["1. ごちそうさまでした","2. しつれいします","3. おかえり","4. おつかれさま"],3,"おつかれさま");
+    let question5 = new quizGame("Trước khi ăn sẽ nói câu gì?",["1. ごちそうさまでした","2. ただいま","3. いただきます","4. おかねはらいます"],2,"いただきます")
 
     let quizzes = [question1,question2,question3,question4,question5];
 
     let currentQuestion = 0;
+    let score = 0;
+    // Đồng hồ đếm ngược
+    let countdown;
+    let timeLimit = 15; // 30 seconds per question
+
+    function startTimer(duration, display) {
+        let timer = duration, minutes, seconds;
+        clearInterval(countdown); // Clear any existing timer
+        countdown = setInterval(function () {
+            minutes = parseInt(timer / 60, 10);
+            seconds = parseInt(timer % 60, 10);
+
+            minutes = minutes < 10 ? "0" + minutes : minutes;
+            seconds = seconds < 10 ? "0" + seconds : seconds;
+
+            display.textContent = minutes + ":" + seconds;
+
+            if (--timer < 0) {
+                clearInterval(countdown);
+                display.textContent = "Hết giờ!";
+                document.getElementById("answer1").disabled = true;
+                document.getElementById("answer2").disabled = true;
+                document.getElementById("answer3").disabled = true;
+                document.getElementById("answer4").disabled = true;
+                document.getElementById("result").innerHTML = "Hết thời gian! Câu trả lời đúng: " + quizzes[currentQuestion].stringAnswer;
+            }
+        }, 1000);
+    }
 
     function renderQuestion(){
         let currentText = quizzes[currentQuestion].question;
@@ -68,15 +122,28 @@
         document.getElementById("answer2").value = currentOptions[1];
         document.getElementById("answer3").value = currentOptions[2];
         document.getElementById("answer4").value = currentOptions[3];
+
+        // Start timer for the new question
+        let display = document.querySelector('#timer');
+        startTimer(timeLimit, display);
     }
 
     function nextQuestion(){
+        clearInterval(countdown); // Stop the current timer
         if (currentQuestion < quizzes.length - 1) {
             currentQuestion++;
             renderQuestion();
             resetColor();
         } else {
-            // Thể hiện tổng điểm số
+            clearInterval(countdown);
+            document.getElementById("timer").style.display = "none"; // Hide timer
+            document.getElementById("tableQuiz").style.display = "none"; // Hide quiz table
+            document.getElementById("nextAnswer").style.display = "none"; // Hide next button// Ensure timer stops at the end
+            if (score <= 20) {
+                document.write("Điểm tổng : " + score + "<br>" + "Hãy cố gắng hơn nhé!")
+            } else {
+                document.write("Điểm tổng : " + score);
+            }
         }
     }
 
@@ -94,21 +161,38 @@
 
     function checkAnswer(clickedIndex,myButton){
         let correctAnswer = quizzes[currentQuestion].correctAnswer;
-
+        clearInterval(countdown); // Stop timer when an answer is selected
         if (clickedIndex == correctAnswer){
             myButton.style.backgroundColor = "green";
-            document.getElementById("result").innerHTML = "Câu trả lời chính xác!";// + "<br>" + "Điểm : " + score;
+            score += 10;
+            document.getElementById("result").innerHTML = "Câu trả lời chính xác!" + "<br>" + "Điểm : " + score;
+            document.getElementById("answer1").disabled = true;
+            document.getElementById("answer2").disabled = true;
+            document.getElementById("answer3").disabled = true;
+            document.getElementById("answer4").disabled = true;
         } else {
             myButton.style.backgroundColor = "red";
-            document.getElementById("result").innerHTML = "Câu trả lời sai! Hãy chọn lại câu trả lời đúng."
+            score += 0;
+            document.getElementById("answer1").disabled = true;
+            document.getElementById("answer2").disabled = true;
+            document.getElementById("answer3").disabled = true;
+            document.getElementById("answer4").disabled = true;
+            document.getElementById("result").innerHTML =
+            "Câu trả lời sai!" + "<br>" + "Điểm : " + score + "<br>" + "Câu trả lời đúng : " + quizzes[currentQuestion].stringAnswer;
         }
     }
 
     function resetColor(){
+        document.getElementById("answer1").disabled = false;
+        document.getElementById("answer2").disabled = false;
+        document.getElementById("answer3").disabled = false;
+        document.getElementById("answer4").disabled = false;
+
         document.getElementById("answer1").style.backgroundColor = "Lightgrey";
         document.getElementById("answer2").style.backgroundColor = "Lightgrey";
         document.getElementById("answer3").style.backgroundColor = "Lightgrey";
         document.getElementById("answer4").style.backgroundColor = "Lightgrey";
+        document.getElementById("result").innerHTML = "";
     }
 
 
